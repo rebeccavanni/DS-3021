@@ -15,7 +15,7 @@ import random
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from sklearn.metrics import classification_report
 from sklearn import metrics
-from plot_metric.functions import BinaryClassification #need to pip install plot metric
+#from plot_metric.functions import BinaryClassification #need to pip install plot metric
 
 #%%
 # -------- Data prep --------
@@ -117,7 +117,32 @@ print(bank_data['signed up_1'].value_counts()[1] / bank_data['signed up_1'].coun
 X = bank_data.drop(['signed up_1'], axis=1).values   # independent variables
 y = bank_data['signed up_1'].values                  # dependent variable
 """
-
+def clean_and_split_data(df, target, test_size=0.4, val_size=0.5, random_state=1984):
+    # Collapse 'job' levels
+    employed = ['admin', 'blue-collar', 'entrepreneur', 'housemaid', 'management',
+                'self-employed', 'services', 'technician']
+    df.iloc[:, df.columns.get_loc('job')] = df.iloc[:, df.columns.get_loc('job')].apply(lambda x: "Employed" if x in employed else "Unemployed")
+   
+    # Convert appropriate columns to category
+    cat_cols = ['job', 'marital', 'education', 'default', 'housing', 'contact', 'poutcome', target]
+    df[cat_cols] = df[cat_cols].astype('category')
+   
+    # Normalize numeric columns
+    numeric_cols = df.select_dtypes(include='int64').columns
+    scaler = preprocessing.MinMaxScaler()
+    df[numeric_cols] = scaler.fit_transform(df[numeric_cols])
+   
+    # One-hot encode categorical columns
+    encoded = pd.get_dummies(df[cat_cols])
+    df = df.drop(cat_cols, axis=1).join(encoded)
+   
+    # Split data into train, test, and validation sets
+    train, test = train_test_split(df, test_size=test_size, stratify=df[f'{target}_1'], random_state=random_state)
+    test, val = train_test_split(test, test_size=val_size, stratify=test[f'{target}_1'], random_state=random_state)
+   
+    return train, test, val
+# Usage
+train, test, val = clean_and_split_data(bank_data, 'signed up')
 train, test = train_test_split(bank_data,  test_size=0.4, stratify = bank_data['signed up_1']) 
 test, val = train_test_split(test, test_size=0.5, stratify=test['signed up_1'])
 
