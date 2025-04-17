@@ -4,8 +4,8 @@
 # Load libraries
 import pandas as pd
 import numpy as np
-import plotly.express as px
-import plotly.graph_objects as go
+#import plotly.express as px
+#import plotly.graph_objects as go
 from sklearn.cluster import KMeans
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
